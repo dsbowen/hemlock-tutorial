@@ -1,4 +1,6 @@
-from hemlock import Branch, Check, Input, Page, Label, Range, Select, route
+from hemlock import Branch, Check, Input, Label, Page, Range, Select, Validate as V, route
+
+from datetime import datetime
 
 @route('/survey')
 def start():
@@ -7,12 +9,14 @@ def start():
             Input(
                 '<p>Enter your date of birth.</p>',
                 placeholder='mm/dd/yyyy',
-                var='DoB', data_rows=-1
+                var='DoB', data_rows=-1,
+                validate=[V.require(), V.date_format()]
             ),
             Check(
                 '<p>Indicate your gender.</p>',
                 ['Male', 'Female', 'Other'],
-                var='Gender', data_rows=-1
+                var='Gender', data_rows=-1,
+                validate=V.require()
             ),
             Check(
                 '<p>Indicate your race or ethnicity. Check as many as apply.</p>',
@@ -23,7 +27,8 @@ def start():
                     'Native Hawaiian or other Pacific Islander',
                     'Other',
                 ],
-                multiple=True, var='Race', data_rows=-1
+                multiple=True, var='Race', data_rows=-1,
+                validate=V.require()
             ),
             Select(
                 '<p>Select your current marital status.</p>',
@@ -54,3 +59,12 @@ def start():
             terminal=True
         )
     )
+
+@V.register
+def date_format(inpt):
+    try:
+        # try to convert to a datetime object
+        datetime.strptime(inpt.response, '%m/%d/%Y')
+    except:
+        # if this fails, the participant entered an invalid response
+        return '<p>Format your date of birth as mm/dd/yyyy.</p>'
