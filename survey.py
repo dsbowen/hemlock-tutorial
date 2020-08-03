@@ -6,11 +6,13 @@ def start():
         Page(
             Input(
                 '<p>Enter your date of birth.</p>',
-                placeholder='mm/dd/yyyy'
+                placeholder='mm/dd/yyyy',
+                var='DoB', data_rows=-1
             ),
             Check(
                 '<p>Indicate your gender.</p>',
-                ['Male', 'Female', 'Other']
+                ['Male', 'Female', 'Other'],
+                var='Gender', data_rows=-1
             ),
             Check(
                 '<p>Indicate your race or ethnicity. Check as many as apply.</p>',
@@ -21,7 +23,7 @@ def start():
                     'Native Hawaiian or other Pacific Islander',
                     'Other',
                 ],
-                multiple=True
+                multiple=True, var='Race', data_rows=-1
             ),
             Select(
                 '<p>Select your current marital status.</p>',
@@ -31,7 +33,8 @@ def start():
                     'Divorced',
                     'Separated',
                     'Never married',
-                ]
+                ],
+                var='MaritalStatus', data_rows=-1
             ),
             Range(
                 '''
@@ -42,7 +45,8 @@ def start():
                 least education, and the worst jobs (or are unemployed). 
                 Please indicate where you think you stand on this scale.</p>
                 ''',
-                min=0, max=10
+                min=0, max=10,
+                var='SubjectiveSES', data_rows=-1
             ),
         ),
         Page(
