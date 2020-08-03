@@ -1,8 +1,13 @@
 from hemlock import Branch, Check, Compile as C, Embedded, Input, Label, Navigate as N, Page, Range, Select, Submit as S, Validate as V, route
-
-from hemlock.tools import join
+from hemlock.tools import comprehension_check, join
 
 from datetime import datetime
+from random import randint
+
+# the number of rounds participants play
+N_ROUNDS = 5
+# the amount of money split
+POT = 20
 
 @route('/survey')
 def start():
@@ -104,10 +109,74 @@ def confirm(confirm_label, demographics_page):
     '''.format(*demographics)
 
 @N.register
-def ultimatum_game(start_branch):
+def ultimatum_game(start_branch=None):
     return Branch(
+        *comprehension_check(
+            instructions=Page(
+                Label(
+                    '''
+                    <p>You are about to play an ultimatum game. The game involves two
+                    players: a <b>proposer</b> and a <b>responder</b>. The proposer has 
+                    ${} to split between him/herself and the responder. The responder 
+                    names an amount of money such that he/she accepts any proposed 
+                    split which gives him/her at least this amount, and rejects any 
+                    proposed split which gives him/her less than this amount.</p>
+
+                    <p><b>If the split is accepted, the proposer and responder split the 
+                    money according to the proposal. If the split is rejected, both 
+                    players receive $0.</b></p>
+
+                    <p>You will play {} rounds of this game. Each round, you will be 
+                    paired with another randomly selected participant. <b>You will rarely, 
+                    if ever, play two rounds with the same player.</b>
+
+                    <p>We will test your understanding of these instructions on the 
+                    next page.</p>
+                    '''.format(POT, N_ROUNDS)
+                )
+            ),
+            checks=[gen_check_page(accept=True), gen_check_page(accept=False)]
+        ),
         Page(
-            Label('<p>You are about to play an ultimatum game...</p>'),
+            Label('<p>You passed the check!</p>'),
             terminal=True
         )
     )
+
+def gen_check_page(accept):
+    return Page(
+        Label(),
+        Input(
+            '<p>How much money does the proposer receive?</p>',
+            prepend='$',
+            append='.00'
+        ),
+        Input(
+            '<p>How much money does the responder receive?</p>',
+            prepend='$',
+            append='.00'
+        ),
+        compile=[C.clear_response(), C.random_proposal(accept)]
+    )
+
+@C.register
+def random_proposal(check_page, accept):
+    # randomly generate a proposed split and response
+    n = randint(1, POT-1)
+    proposal = POT-n, n # proposer receives POT-n, responder receives n
+    response = randint(0, n) if accept else randint(n+1, POT)
+    # compute the payoff
+    payoff = proposal if response<=proposal[1] else (0, 0)
+    # describe the proposal and response in the label
+    check_page.questions[0].label = '''
+    <p>Imagine the proposer proposes the following split:</p>
+    <ul>
+       <li>Proposer: ${}</li>
+       <li>Responder: ${}</li>
+    </ul>
+    <p>The responder says, "I will accept any proposal which gives 
+    me at least ${}."</p>
+    '''.format(*proposal, response)
+    # add submit functions to verify that the response was correct
+    check_page.questions[1].submit = S.match(str(payoff[0]))
+    check_page.questions[2].submit = S.match(str(payoff[1]))
