@@ -1,4 +1,4 @@
-from hemlock import Branch, Check, Input, Label, Page, Range, Select, Validate as V, route
+from hemlock import Branch, Check, Embedded, Input, Label, Page, Range, Select, Submit as S, Validate as V, route
 
 from datetime import datetime
 
@@ -10,7 +10,8 @@ def start():
                 '<p>Enter your date of birth.</p>',
                 placeholder='mm/dd/yyyy',
                 var='DoB', data_rows=-1,
-                validate=[V.require(), V.date_format()]
+                validate=[V.require(), V.date_format()],
+                submit=S.record_age()
             ),
             Check(
                 '<p>Indicate your gender.</p>',
@@ -68,3 +69,11 @@ def date_format(inpt):
     except:
         # if this fails, the participant entered an invalid response
         return '<p>Format your date of birth as mm/dd/yyyy.</p>'
+
+@S.register
+def record_age(inpt):
+    # calculate age in years
+    date_of_birth = datetime.strptime(inpt.data, '%m/%d/%Y')
+    age = (datetime.utcnow() - date_of_birth).days / 365.25
+    # record age as embedded data
+    inpt.page.embedded = [Embedded('Age', age, data_rows=-1)]
