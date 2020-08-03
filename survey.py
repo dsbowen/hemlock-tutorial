@@ -1,5 +1,5 @@
 from hemlock import Branch, Check, Compile as C, Embedded, Input, Label, Navigate as N, Page, Range, Select, Submit as S, Validate as V, route
-from hemlock.tools import comprehension_check, join
+from hemlock.tools import Assigner, comprehension_check, join
 
 from datetime import datetime
 from random import randint
@@ -8,6 +8,8 @@ from random import randint
 N_ROUNDS = 5
 # the amount of money split
 POT = 20
+
+assigner = Assigner({'Proposer': (0, 1)})
 
 @route('/survey')
 def start():
@@ -110,6 +112,7 @@ def confirm(confirm_label, demographics_page):
 
 @N.register
 def ultimatum_game(start_branch=None):
+    proposer = assigner.next()['Proposer']
     return Branch(
         *comprehension_check(
             instructions=Page(
@@ -138,7 +141,11 @@ def ultimatum_game(start_branch=None):
             checks=[gen_check_page(accept=True), gen_check_page(accept=False)]
         ),
         Page(
-            Label('<p>You passed the check!</p>'),
+            Label(
+                '''
+                <p>You are about to play an ultimatum game as a <b>{}</b>.</p>
+                '''.format('proposer' if proposer else 'responder')
+            ),
             terminal=True
         )
     )
