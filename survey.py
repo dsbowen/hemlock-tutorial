@@ -1,4 +1,5 @@
-from hemlock import Branch, Check, Compile as C, Embedded, Input, Label, Page, Range, Select, Submit as S, Validate as V, route
+from hemlock import Branch, Check, Compile as C, Embedded, Input, Label, Navigate as N, Page, Range, Select, Submit as S, Validate as V, route
+
 from hemlock.tools import join
 
 from datetime import datetime
@@ -59,8 +60,9 @@ def start():
         demographics_page,
         Page(
             Label(compile=C.confirm(demographics_page)),
-            back=True, terminal=True
-        )
+            back=True
+        ),
+        navigate=N.ultimatum_game()
     )
 
 @V.register
@@ -100,3 +102,12 @@ def confirm(confirm_label, demographics_page):
     </ul>
     <p>To correct this information, click '<<'.</p>
     '''.format(*demographics)
+
+@N.register
+def ultimatum_game(start_branch):
+    return Branch(
+        Page(
+            Label('<p>You are about to play an ultimatum game...</p>'),
+            terminal=True
+        )
+    )
