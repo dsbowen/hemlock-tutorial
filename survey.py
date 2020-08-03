@@ -148,7 +148,7 @@ def ultimatum_game(start_branch=None):
                 '''.format('proposer' if proposer else 'responder')
             )
         ),
-        navigate=N.proposer_branch()
+        navigate=N.proposer_branch() if proposer else N.responder_branch()
     )
 
 def gen_check_page(accept):
@@ -254,4 +254,73 @@ def proposer_outcome(outcome_label, proposal_input):
         <p><b>Your proposal was {}, giving you a payoff of ${}.</b></p>
     '''.format(
         *proposal, response, 'accepted' if accept else 'rejected', payoff[0]
+    )
+
+@N.register
+def responder_branch(ultimatum_game_branch=None):
+    branch = Branch()
+    for round_ in range(N_ROUNDS):
+        response_input = gen_response_input(round_+1)
+        branch.pages.append(Page(response_input))
+        branch.pages.append(Page(
+            Label(compile=C.responder_outcome(response_input)),
+            cache_compile=True
+        ))
+    branch.pages.append(Page(
+        Label('<p>Thank you for completing the hemlock tutorial!</p>'),
+        terminal=True        
+    ))
+    return branch
+
+def gen_response_input(round_):
+    return Input(
+        '''
+        <p><b>Round {} of {}</b></p>
+        <p>The proposer has ${} to split between him/herself and you. Complete
+        this sentence:</p>
+        <p>I will accept any proposal which gives me at least</p>
+        '''.format(round_, N_ROUNDS, POT),
+        prepend='$', append='.00', var='Response',
+        validate=V.range_val(0, POT),
+        submit=S.data_type(int)
+    )
+
+@C.register
+def responder_outcome(outcome_label, responder_input):
+    # get the response
+    response = responder_input.data
+    # randomly select a proposal
+    proposal_inputs = Input.query.filter(
+        Input.var=='Proposal', Input.data!=None
+    ).all()
+    if proposal_inputs:
+        # randomly choose a proposal
+        n = random.choice(proposal_inputs).data
+    else:
+        # no proposals are available
+        # e.g. if this is the first participant
+        n = randint(0, POT)
+    proposal = POT-n, n
+    # compute the payoff
+    accept = response <= proposal[1]
+    payoff = proposal if accept else (0, 0)
+    # record results as embedded data
+    outcome_label.page.embedded = [
+        Embedded('Proposal', proposal[1]),
+        Embedded('Accept', int(accept)),
+        Embedded('ProposerPayoff', payoff[0]),
+        Embedded('ResponderPayoff', payoff[1])
+    ]
+    # describe the outcome of the round
+    outcome_label.label = '''
+        <p>The proposer proposed the following split:</p>
+        <ul>
+            <li>Proposer: ${}</li>
+            <li>You: ${}</li>
+        </ul>
+        <p>You said you will accept any proposal which gives you at 
+        least ${}.</p>
+        <p><b>You {} the proposal, giving you a payoff of ${}.</b></p>
+    '''.format(
+        *proposal, response, 'accepted' if accept else 'rejected', payoff[1]
     )
