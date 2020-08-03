@@ -4,7 +4,7 @@ from hemlock import Branch, Page, Label, route
 def start():
     return Branch(
         Page(
-            Label('<p>Hello World</p>'), 
+            Label('<p>Hello, World!</p>'), 
             terminal=True
         )
     )
