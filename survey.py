@@ -1,4 +1,4 @@
-from hemlock import Branch, Check, Compile as C, Embedded, Input, Label, Navigate as N, Page, Range, Select, Submit as S, Validate as V, route
+from hemlock import Branch, Check, Compile as C, Debug as D, Embedded, Input, Label, Navigate as N, Page, Range, Select, Submit as S, Validate as V, route
 from hemlock.tools import Assigner, comprehension_check, join
 
 import random
@@ -20,7 +20,8 @@ def start():
             placeholder='mm/dd/yyyy',
             var='DoB', data_rows=-1,
             validate=[V.require(), V.date_format()],
-            submit=S.record_age()
+            submit=S.record_age(),
+            debug=[D.send_keys(), D.send_keys('10/26/1992', p_exec=.8)]
         ),
         Check(
             '<p>Indicate your gender.</p>',
@@ -188,6 +189,12 @@ def random_proposal(check_page, accept):
     # add submit functions to verify that the response was correct
     check_page.questions[1].submit = S.match(str(payoff[0]))
     check_page.questions[2].submit = S.match(str(payoff[1]))
+    check_page.questions[1].debug = [
+        D.send_keys(), D.send_keys(str(payoff[0]), p_exec=.8)
+    ]
+    check_page.questions[2].debug = [
+        D.send_keys(), D.send_keys(str(payoff[1]), p_exec=.8)
+    ]
 
 @N.register
 def proposer_branch(ultimatum_game_branch):
@@ -214,7 +221,8 @@ def gen_proposal_input(round_):
         '''.format(round_, N_ROUNDS, POT),
         prepend='$', append='.00', var='Proposal',
         validate=V.range_val(0, POT),
-        submit=S.data_type(int)
+        submit=S.data_type(int),
+        debug=[D.send_keys(), D.send_keys(str(randint(0, POT)), p_exec=.8)]
     )
 
 @C.register
@@ -282,7 +290,8 @@ def gen_response_input(round_):
         '''.format(round_, N_ROUNDS, POT),
         prepend='$', append='.00', var='Response',
         validate=V.range_val(0, POT),
-        submit=S.data_type(int)
+        submit=S.data_type(int),
+        debug=[D.send_keys(), D.send_keys(str(randint(0, POT)), p_exec=.8)]
     )
 
 @C.register
