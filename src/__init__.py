@@ -1,28 +1,20 @@
-"""Main survey file.
-"""
 import os
 
-from flask_login import current_user
-from hemlock import User, Page
-from hemlock.functional import compile, validate, test_response
-from hemlock.questions import Check, Input, Label, Range, Select, Textarea
-from hemlock import utils
-from sqlalchemy_mutable.utils import partial
-
-
-@User.route("/survey")
-def seed():
-    """Creates the main survey branch.
-
-    Returns:
-        List[Page]: List of pages shown to the user.
-    """
-    return [
-        Page(
-            Label("Hello, world!")
-        ),
-        Page(
-            Label("Goodbye, world!"),
-            back=True
-        )
-    ]
+if (survey_name := os.getenv("SURVEY_NAME", None)) in ("my_survey", None):
+    from . import my_survey
+elif survey_name == "application":
+    from . import application
+elif survey_name == "testing":
+    from . import testing
+elif survey_name == "data":
+    from . import data
+elif survey_name == "compile":
+    from . import compile
+elif survey_name == "validate":
+    from . import validate
+elif survey_name == "submit":
+    from . import submit
+elif survey_name == "navigate":
+    from . import navigate
+elif survey_name == "utils":
+    from . import utils

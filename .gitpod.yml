@@ -18,8 +18,7 @@ tasks:
     command: |
       export VS_CODE_REMOTE=False FLASK_ENV=development
       pip install -r requirements.txt
-      code src/__init__.py
-      python app.py
+      code tutorial/000_questions.ipynb
 
 vscode:
   extensions:
