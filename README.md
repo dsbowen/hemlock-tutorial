@@ -24,5 +24,7 @@ $ make testserve
 
 Click the button below to deploy this app to Heroku.
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+<a href="https://heroku.com/deploy" target="_blank">
+  <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
+</a>
 

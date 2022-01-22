@@ -1,6 +1,6 @@
 import os
 
-if (survey_name := os.getenv("SURVEY_NAME", None)) in ("my_survey", None):
+if (survey_name := os.getenv("SURVEY_NAME", "my_survey")) == "my_survey":
     from . import my_survey
 elif survey_name == "application":
     from . import application
