@@ -12,12 +12,11 @@ ports:
     onOpen: ignore
 
 tasks:
-  - init: |
-      pip install -e .
-    # set VS_CODE_REMOTE to True when working in VS code remote desktop
-    command: |
+  # set VS_CODE_REMOTE to True when working in VS code remote desktop
+  - command: |
       export VS_CODE_REMOTE=False FLASK_ENV=development
       pip install -r requirements.txt
+      pip install -e .
       code tutorial/000_questions.ipynb
 
 vscode:
