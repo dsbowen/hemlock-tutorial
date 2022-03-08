@@ -1,9 +1,13 @@
+import os
+
 import pytest
 from hemlock import User, create_test_app
 from hemlock.app import db
 
 import src
 
+DATA_DIR = "data"
+DATA_FILE = "test.csv"
 N_USERS = 100
 
 
@@ -17,3 +21,6 @@ def app():
 
 def test(app):
     User.test_multiple_users(N_USERS)
+    if not os.path.exists(DATA_DIR):
+        os.mkdir(DATA_DIR)
+    User.get_all_data().to_csv(os.path.join(DATA_DIR, DATA_FILE), index=False)
